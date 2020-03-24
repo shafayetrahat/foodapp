@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:foodapp/services/authservice.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -41,33 +41,27 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: Drawer(
         child: ListView(
+          padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
+              child: Text('Food Delivery App'),
               decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/header.jpg"),
-                      fit: BoxFit.cover)),
-              child: Text(
-                'Food Delivery System',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+                image: DecorationImage(image: AssetImage('assests/header.jpg')),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.verified_user),
               title: Text('Signout'),
-
+              leading: Icon(Icons.verified_user),
+              onTap: () {
+                AuthService().signOut();              },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
               title: Text('Settings'),
-              onTap: (){
-                Navigator.pushNamed(context, "/settings");
+              leading: Icon(Icons.settings),
+              onTap: () {
+                Navigator.pop(context);
               },
             ),
-            
           ],
         ),
       ),

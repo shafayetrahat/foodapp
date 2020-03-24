@@ -1,177 +1,88 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'package:foodapp/services/authservice.dart';
 
 class Signup extends StatefulWidget {
-  Signup({Key key, this.title}) : super(key: key);
-  final String title;
-
   @override
   _SignupState createState() => _SignupState();
 }
 
 class _SignupState extends State<Signup> {
-  String phoneNo;
-  String smsOTP;
-  String verificationId;
-  String errorMessage = '';
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final formKey = new GlobalKey<FormState>();
 
-  Future<void> verifyPhone() async {
-    final PhoneCodeSent smsOTPSent = (String verId, [int forceCodeResend]) {
-      this.verificationId = verId;
-      smsOTPDialog(context).then((value) {
-        print('sign in');
-      });
-    };
-    try {
-      await _auth.verifyPhoneNumber(
-          phoneNumber: this.phoneNo, // PHONE NUMBER TO SEND OTP
-          codeAutoRetrievalTimeout: (String verId) {
-            //Starts the phone number verification process for the given phone number.
-            //Either sends an SMS with a 6 digit code to the phone number specified, or sign's the user in and [verificationCompleted] is called.
-            this.verificationId = verId;
-          },
-          codeSent:
-              smsOTPSent, // WHEN CODE SENT THEN WE OPEN DIALOG TO ENTER OTP.
-          timeout: const Duration(seconds: 20),
-          verificationCompleted: (AuthCredential phoneAuthCredential) {
-            print(phoneAuthCredential);
-          },
-          verificationFailed: (AuthException exceptio) {
-            print('${exceptio.message}');
-          });
-    } catch (e) {
-      handleError(e);
-    }
-  }
+  String phoneNo, verificationId, smsCode;
 
-  Future<bool> smsOTPDialog(BuildContext context) {
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return new AlertDialog(
-            title: Text('Enter SMS Code'),
-            content: Container(
-              height: 85,
-              child: Column(children: [
-                TextField(
-                  onChanged: (value) {
-                    this.smsOTP = value;
-                  },
-                ),
-                (errorMessage != ''
-                    ? Text(
-                        errorMessage,
-                        style: TextStyle(color: Colors.red),
-                      )
-                    : Container())
-              ]),
-            ),
-            contentPadding: EdgeInsets.all(10),
-            actions: <Widget>[
-              MaterialButton(
-                child: Text('Done'),
-                onPressed: () {
-                  _auth.currentUser().then((user) {
-                    if (user != null) {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushReplacementNamed('/home');
-                    } else {
-                      signIn();
-                    }
-                  });
-                },
-              )
-            ],
-          );
-        });
-  }
-
-  signIn() async {
-    try {
-      final AuthCredential credential = PhoneAuthProvider.getCredential(
-        verificationId: verificationId,
-        smsCode: smsOTP,
-      );
-      final AuthResult user = await _auth.signInWithCredential(credential);
-      final FirebaseUser currentUser = await _auth.currentUser();
-      assert(user.user.uid == currentUser.uid);
-      Navigator.of(context).pop();
-      Navigator.of(context).pushReplacementNamed('/home');
-    } catch (e) {
-      handleError(e);
-    }
-  }
-
-  handleError(PlatformException error) {
-    print(error);
-    switch (error.code) {
-      case 'ERROR_INVALID_VERIFICATION_CODE':
-        FocusScope.of(context).requestFocus(new FocusNode());
-        setState(() {
-          errorMessage = 'Invalid Code';
-        });
-        Navigator.of(context).pop();
-        smsOTPDialog(context).then((value) {
-          print('sign in');
-        });
-        break;
-      default:
-        setState(() {
-          errorMessage = error.message;
-        });
-
-        break;
-    }
-  }
+  bool codeSent = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.red[900],
-        centerTitle: true,
-        title: Text("Verify mobile number"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: TextField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  focusColor: Colors.red[200],
-                  hintText: 'Enter Phone Number Eg. +910000000000'),
-                onChanged: (value) {
-                  this.phoneNo = value;
-                },
-              ),
-            ),
-            (errorMessage != ''
-                ? Text(
-                    errorMessage,
-                    style: TextStyle(color: Colors.red),
-                  )
-                : Container()),
-            SizedBox(
-              height: 10,
-            ),
-            RaisedButton(
-              onPressed: () {
-                verifyPhone();
-              },
-              child: Text('Verify'),
-              textColor: Colors.white,
-              elevation: 10,
-              color: Colors.red[900],
-            )
-          ],
-        ),
-      ),
+      body: Form(
+          key: formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                  padding: EdgeInsets.only(left: 25.0, right: 25.0),
+                  child: TextFormField(
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(hintText: 'Enter phone number'),
+                    onChanged: (val) {
+                      setState(() {
+                        this.phoneNo = val;
+                      });
+                    },
+                  )),
+                  codeSent ? Padding(
+                  padding: EdgeInsets.only(left: 25.0, right: 25.0),
+                  child: TextFormField(
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(hintText: 'Enter OTP'),
+                    onChanged: (val) {
+                      setState(() {
+                        this.smsCode = val;
+                      });
+                    },
+                  )) : Container(),
+              Padding(
+                  padding: EdgeInsets.only(left: 25.0, right: 25.0),
+                  child: RaisedButton(
+                      child: Center(child: codeSent ? Text('Login'):Text('Verify')),
+                      onPressed: () {
+                        codeSent ? AuthService().signInWithOTP(smsCode, verificationId):verifyPhone(phoneNo);
+                      }))
+            ],
+          )),
     );
+  }
+
+  Future<void> verifyPhone(phoneNo) async {
+    final PhoneVerificationCompleted verified = (AuthCredential authResult) {
+      AuthService().signIn(authResult);
+    };
+
+    final PhoneVerificationFailed verificationfailed =
+        (AuthException authException) {
+      print('${authException.message}');
+    };
+
+    final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
+      this.verificationId = verId;
+      setState(() {
+        this.codeSent = true;
+      });
+    };
+
+    final PhoneCodeAutoRetrievalTimeout autoTimeout = (String verId) {
+      this.verificationId = verId;
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNo,
+        timeout: const Duration(seconds: 5),
+        verificationCompleted: verified,
+        verificationFailed: verificationfailed,
+        codeSent: smsSent,
+        codeAutoRetrievalTimeout: autoTimeout);
   }
 }
