@@ -33,13 +33,26 @@ class _DasboardState extends State<Dasboard> {
               return new ListView(
                 children:
                     snapshot.data.documents.map((DocumentSnapshot document) {
-                  return Card(
-                    child: new ListTile(
-                      title: new Text(document['name']),
-                      subtitle: new Text(
-                          "Price     " + document['price'] + " dollar"),
-                    ),
-                  );
+                  if (document['avail'] == false) {
+                    return Visibility(
+                      visible: false,
+                      child: Card(
+                        child: new ListTile(
+                          title: new Text(document['name']),
+                          subtitle: new Text(
+                              "Price     " + document['price'] + " dollar"),
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Card(
+                      child: new ListTile(
+                        title: new Text(document['name']),
+                        subtitle: new Text(
+                            "Price     " + document['price'] + " dollar"),
+                      ),
+                    );
+                  }
                 }).toList(),
               );
           }
@@ -51,7 +64,7 @@ class _DasboardState extends State<Dasboard> {
           children: <Widget>[
             DrawerHeader(
               child: Text('Food Delivery App'),
-             decoration: BoxDecoration(
+              decoration: BoxDecoration(
                 image: DecorationImage(image: AssetImage('assets/header.jpg')),
               ),
             ),
