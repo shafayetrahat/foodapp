@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/services/authservice.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:foodapp/services/suggestion.dart';
+// import 'package:foodapp/views/dashboard.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -14,17 +17,30 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Container(
         child: Center(
-          child: TextField(
-            obscureText: true,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.location_searching),
-              labelText: 'Location',
-            ),
-          ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TypeAheadField(
+          textFieldConfiguration: TextFieldConfiguration(
+                autofocus: true,
+                decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: OutlineInputBorder())),
+          suggestionsCallback: (pattern) async {
+              return CitiesService.getSuggestions(pattern);
+          },
+          itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion),
+              );
+          },
+          onSuggestionSelected: (suggestion) {
+              Navigator.pushNamed(context, '/dashboard', arguments: {
+                'branch': suggestion,
+              });
+          },
         ),
+            )),
         height: double.infinity,
         width: double.infinity,
         decoration: BoxDecoration(
@@ -53,7 +69,8 @@ class _HomePageState extends State<HomePage> {
               title: Text('Signout'),
               leading: Icon(Icons.verified_user),
               onTap: () {
-                AuthService().signOut();              },
+                AuthService().signOut();
+              },
             ),
             ListTile(
               title: Text('Settings'),

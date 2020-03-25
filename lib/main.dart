@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'views/settings.dart';
-// import 'views/home.dart';
+import 'package:foodapp/views/dashboard.dart';
+import 'package:foodapp/views/home.dart';
+import 'views/cart.dart';
 import 'package:foodapp/services/authservice.dart';
+
+
 void main() =>runApp(FoodApp());
 
 class FoodApp extends StatelessWidget {
@@ -11,10 +14,10 @@ class FoodApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: AuthService().handleAuth(),
-      title: 'Food Delivery System',
       routes: {
-        '/settings': (BuildContext context) => Settings(),
-        // '/home': (BuildContext context) => HomePage(),
+        '/cart': (BuildContext context) => Cart(),
+        '/home': (BuildContext context) => HomePage(),
+        '/dashboard': (BuildContext context) => Dasboard(),
       },
     );
   }
