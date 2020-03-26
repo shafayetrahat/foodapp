@@ -33,26 +33,24 @@ class _DasboardState extends State<Dasboard> {
               return new ListView(
                 children:
                     snapshot.data.documents.map((DocumentSnapshot document) {
-                  if (document['avail'] == false) {
-                    return Visibility(
-                      visible: false,
-                      child: Card(
-                        child: new ListTile(
-                          title: new Text(document['name']),
-                          subtitle: new Text(
-                              "Price     " + document['price'] + " dollar"),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return Card(
-                      child: new ListTile(
-                        title: new Text(document['name']),
-                        subtitle: new Text(
-                            "Price     " + document['price'] + " dollar"),
-                      ),
-                    );
-                  }
+                  return Card(
+                    child: new SwitchListTile(
+                      value: document['avail'],
+                      title: new Text(document['name']),
+                      subtitle: new Text(
+                          "Price     " + document['price'] + " dollar"),
+                      onChanged: (bool value) {
+                        document['avail']==true ?
+                        document.reference.updateData({
+                          'avail': false,
+                        })
+                        :document.reference.updateData({
+                          'avail': true,
+                        });
+
+                      },
+                    ),
+                  );
                 }).toList(),
               );
           }

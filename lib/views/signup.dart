@@ -22,7 +22,7 @@ class _SignupState extends State<Signup> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Padding(
+              !codeSent ? Padding(
                   padding: EdgeInsets.only(left: 25.0, right: 25.0),
                   child: TextFormField(
                     keyboardType: TextInputType.phone,
@@ -32,12 +32,12 @@ class _SignupState extends State<Signup> {
                         this.phoneNo = val;
                       });
                     },
-                  )),
+                  )) : Container(),
                   codeSent ? Padding(
                   padding: EdgeInsets.only(left: 25.0, right: 25.0),
                   child: TextFormField(
                     keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(hintText: 'Enter OTP'),
+                    decoration: InputDecoration(hintText: 'Enter verification code'),
                     onChanged: (val) {
                       setState(() {
                         this.smsCode = val;
